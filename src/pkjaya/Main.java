@@ -1,5 +1,6 @@
 package pkjaya;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -12,7 +13,7 @@ public class Main {
 		System.out.print("Please enter type of usage 'c' for compression, 'd' for decompression: ");
 		Character type = s.nextLine().charAt(0);
 		long start = System.currentTimeMillis();
-		HuffmanAnalyzer huff = new HuffmanAnalyzer(fileName,type);
+		HuffmanAnalyzer huff = new HuffmanAnalyzer(fileName, type);
 		long end = System.currentTimeMillis();
 		System.out.println("File is compressed in: " + (end - start) + " ms");
 	}
