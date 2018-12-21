@@ -1,13 +1,16 @@
 package pkjaya;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.*;
-import java.lang.Object;
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.PriorityQueue;
+import java.util.Scanner;
 
 public class HuffmanAnalyzer {
 
@@ -18,6 +21,7 @@ public class HuffmanAnalyzer {
 	private File outputFile = new File("output.txt");
 	private String secret = "HuffmanYaRgola";
 	private HashMap<String, String> updatedCodes = new HashMap<String, String>();
+	private FileOutputStream fos;
 
 	public HuffmanAnalyzer(String fileName, Character choice) throws IOException {
 		this.fileName = fileName;
@@ -57,29 +61,7 @@ public class HuffmanAnalyzer {
 		}
 		this.root = pq.remove();
 		giveCodes(root, "0");
-		int lengthOfNodes = listOfNodes.size();
-		for (int i = 0; i < lengthOfNodes; i++) {
-			Node q = listOfNodes.poll();
-			updatedCodes.put(q.getCharacter(), q.getCode());
-			System.out.println("Character is: " + q.getCharacter() + "Code is: " + q.getCode() + "Frequency is:"
-					+ q.getFrequency());
-		}
-
-		Scanner scanner = new Scanner(new File(this.fileName));
-		String text = scanner.useDelimiter("\\A").next();
-		text = text.replaceAll("\n|\r", "");
-		String zerosAndOnes = "";
-		scanner.close(); // Put this call in a finally block
-		for (int i = 0; i < text.length(); i++)
-			zerosAndOnes += updatedCodes.get(Character.toString(text.charAt(i)));
-
-		System.out.println(zerosAndOnes);
-
-		BitSet bitSet = getBitSet(zerosAndOnes);
-		byte[] writeBytes = bitSet.toByteArray();
-		try (FileOutputStream fos = new FileOutputStream("output.txt")) {
-			fos.write(writeBytes);
-		}
+		writeIntoAFile(listOfNodes, this.outputFile);
 
 	}
 
@@ -99,11 +81,49 @@ public class HuffmanAnalyzer {
 		return bitSet;
 	}
 
-	private HashMap<String, Integer> makeDictionary() throws FileNotFoundException {
-		HashMap<String, Integer> dict = new HashMap<String, Integer>();
-		FileInputStream file = new FileInputStream(this.fileName);
-		String read;
+	private void writeIntoAFile(PriorityQueue<Node> pq, File outputFile) {
+
 		try {
+			PriorityQueue<Node> copy = new PriorityQueue<Node>(pq);
+			Scanner scanner = new Scanner(new File(this.fileName));
+			String text = scanner.useDelimiter("\\A").next();
+			scanner.close();
+			String zeroOnesString = "";
+			
+			FileWriter fstream = new FileWriter(outputFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			int lengthOfNodes = pq.size();
+			for (int i = 0; i < lengthOfNodes; i++) {
+				Node q = pq.poll();
+				updatedCodes.put(q.getCharacter(), q.getCode());
+			}
+			
+			lengthOfNodes = copy.size();
+			for (int i = 0; i < lengthOfNodes; i++) {
+				Node q = copy.poll();
+				out.write(q.getCharacter() + ":" + q.getCode() + "\n");
+			}
+			out.write("<<====>>\n");
+			for (int i = 0; i < text.length(); i++)
+				zeroOnesString += updatedCodes.get(Character.toString(text.charAt(i)));
+			BitSet bitSet = getBitSet(zeroOnesString);
+			byte[] writeBytes = bitSet.toByteArray();
+			out.close();
+			fos = new FileOutputStream("output.txt",true);
+			fos.write(writeBytes);
+			fos.close();
+		} catch (Exception e) {
+			System.err.println("Error while writing to file: " + e.getMessage());
+		}
+	}
+
+	private HashMap<String, Integer> makeDictionary() {
+		HashMap<String, Integer> dict = new HashMap<String, Integer>();
+		try {
+
+			FileInputStream file = new FileInputStream(this.fileName);
+			String read;
 			while (file.available() > 1) {
 				Character temp = (char) file.read();
 				read = temp.toString();
@@ -117,8 +137,6 @@ public class HuffmanAnalyzer {
 
 		return dict;
 	}
-
-	int count = 0;
 
 	private void giveCodes(Node node, String str) {
 

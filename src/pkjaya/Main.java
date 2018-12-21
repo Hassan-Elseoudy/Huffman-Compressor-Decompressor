@@ -1,7 +1,7 @@
 package pkjaya;
 
 import java.io.IOException;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -11,9 +11,10 @@ public class Main {
 		String fileName = s.nextLine();
 		System.out.print("Please enter type of usage 'c' for compression, 'd' for decompression: ");
 		Character type = s.nextLine().charAt(0);
+		long start = System.currentTimeMillis();
 		HuffmanAnalyzer huff = new HuffmanAnalyzer(fileName,type);
-		
-		System.out.println("dictionary is: " + huff.getDictionary());
+		long end = System.currentTimeMillis();
+		System.out.println("File is compressed in: " + (end - start) + " ms");
 	}
 
 }
