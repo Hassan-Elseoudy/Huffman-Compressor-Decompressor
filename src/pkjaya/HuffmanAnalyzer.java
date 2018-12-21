@@ -3,8 +3,11 @@ package pkjaya;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.*;
+import java.lang.Object;
 
 public class HuffmanAnalyzer {
 
@@ -12,10 +15,11 @@ public class HuffmanAnalyzer {
 	private String fileName;
 	private Character choice;
 	private Node root;
-	private File outputFile;
+	private File outputFile = new File("output.txt");
 	private String secret = "HuffmanYaRgola";
+	private HashMap<String, String> updatedCodes = new HashMap<String, String>();
 
-	public HuffmanAnalyzer(String fileName, Character choice) throws FileNotFoundException {
+	public HuffmanAnalyzer(String fileName, Character choice) throws IOException {
 		this.fileName = fileName;
 		this.choice = choice;
 		if (choice.equals('c'))
@@ -25,7 +29,7 @@ public class HuffmanAnalyzer {
 
 	}
 
-	private void compress() throws FileNotFoundException {
+	private void compress() throws IOException {
 		this.dictionary = makeDictionary();
 		PriorityQueue<Node> pq = new PriorityQueue<Node>(dictionary.size(), new Comparator<Node>() {
 			@Override
@@ -56,15 +60,43 @@ public class HuffmanAnalyzer {
 		int lengthOfNodes = listOfNodes.size();
 		for (int i = 0; i < lengthOfNodes; i++) {
 			Node q = listOfNodes.poll();
-			if (!q.getParent().equals(null))
-				System.out.println("Character is: " + q.getCharacter() + "Code is: " + q.getCode() + "Frequency is:"
-						+ q.getFrequency());
+			updatedCodes.put(q.getCharacter(), q.getCode());
+			System.out.println("Character is: " + q.getCharacter() + "Code is: " + q.getCode() + "Frequency is:"
+					+ q.getFrequency());
+		}
+
+		Scanner scanner = new Scanner(new File(this.fileName));
+		String text = scanner.useDelimiter("\\A").next();
+		text = text.replaceAll("\n|\r", "");
+		String zerosAndOnes = "";
+		scanner.close(); // Put this call in a finally block
+		for (int i = 0; i < text.length(); i++)
+			zerosAndOnes += updatedCodes.get(Character.toString(text.charAt(i)));
+
+		System.out.println(zerosAndOnes);
+
+		BitSet bitSet = getBitSet(zerosAndOnes);
+		byte[] writeBytes = bitSet.toByteArray();
+		try (FileOutputStream fos = new FileOutputStream("output.txt")) {
+			fos.write(writeBytes);
 		}
 
 	}
 
 	private void decompress() {
 
+	}
+
+	private BitSet getBitSet(String str) {
+		BitSet bitSet = new BitSet(str.length());
+		int bitcounter = 0;
+		for (Character c : str.toCharArray()) {
+			if (c.equals('1')) {
+				bitSet.set(bitcounter);
+			}
+			bitcounter++;
+		}
+		return bitSet;
 	}
 
 	private HashMap<String, Integer> makeDictionary() throws FileNotFoundException {
@@ -82,6 +114,7 @@ public class HuffmanAnalyzer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
 		return dict;
 	}
 
@@ -93,7 +126,7 @@ public class HuffmanAnalyzer {
 			return;
 		giveCodes(node.getLeft(), (str.substring(0, str.length()) + "0"));
 		giveCodes(node.getRight(), (str.substring(0, str.length()) + "1"));
-		node.code = str;
+		node.setCode(str);
 
 	}
 

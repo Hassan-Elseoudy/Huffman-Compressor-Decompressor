@@ -6,6 +6,7 @@ public class Node {
 	private Node right;
 	private Node left;
 	private Node parent;
+	private String code;
 
 	public void setCharacter(String character) {
 		this.character = character;
@@ -30,8 +31,6 @@ public class Node {
 	public void setCode(String code) {
 		this.code = code;
 	}
-
-	String code;
 
 	public String getCharacter() {
 		return character;
