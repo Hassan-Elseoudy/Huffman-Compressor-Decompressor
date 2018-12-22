@@ -50,7 +50,6 @@ public class Compressor {
 
 	}
 
-
 	private void writeIntoAFile(PriorityQueue<Node> pq, File outputFile) {
 
 		try {
@@ -69,25 +68,35 @@ public class Compressor {
 				updatedCodes.put(q.getCharacter(), q.getCode());
 			}
 
-			lengthOfNodes = copy.size();
-			for (int i = 0; i < lengthOfNodes; i++) {
-				Node q = copy.poll();
-				out.write(q.getCharacter() + ":" + q.getCode() + "\n");
-			}
-			out.write("<<====>>\n");
-			out.close();
 			/**
 			 * Writing the real compressed file.
 			 */
-			
+
 			for (int i = 0; i < text.length() - 1; i++)
-				zeroOnesString += updatedCodes.get(Character.toString(text.charAt(i))); //GetCodes
+				zeroOnesString += updatedCodes.get(Character.toString(text.charAt(i))); // GetCodes
 			System.out.println(zeroOnesString);
 			BitSet bitSet = getBitSet(zeroOnesString);
 			byte[] writeBytes = bitSet.toByteArray();
+			out.write(writeBytes.length + "\n");
+			lengthOfNodes = copy.size();
+			for (int i = 0; i < lengthOfNodes; i++) {
+				Node q = copy.poll();
+				out.write(q.getCharacter() + "_:_" + q.getCode() + "\n");
+			}
+			out.write("<<====>>\n");
+			out.close();
+
 			fos = new FileOutputStream(this.outputFile, true); // --> Appending in the file
 			fos.write(writeBytes);
 			fos.close();
+			BinaryOut binOut = new BinaryOut("compressed.txt");
+			for (int i = 0; i < zeroOnesString.length(); i++) {
+				if (zeroOnesString.charAt(i) == '0')
+					binOut.write(false);
+				else
+					binOut.write(true);
+			}
+			binOut.close();
 		} catch (Exception e) {
 			System.err.println("Error while writing to file: " + e.getMessage());
 		}
@@ -104,7 +113,7 @@ public class Compressor {
 		}
 		return bitSet;
 	}
-	
+
 	private HashMap<String, Integer> makeDictionary() {
 		HashMap<String, Integer> dict = new HashMap<String, Integer>();
 		try {
