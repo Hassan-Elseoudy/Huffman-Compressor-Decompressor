@@ -67,36 +67,34 @@ public class Compressor {
 				Node q = pq.poll();
 				updatedCodes.put(q.getCharacter(), q.getCode());
 			}
-
-			/**
-			 * Writing the real compressed file.
-			 */
-
 			for (int i = 0; i < text.length() - 1; i++)
 				zeroOnesString += updatedCodes.get(Character.toString(text.charAt(i))); // GetCodes
-			System.out.println(zeroOnesString);
+			
+			/** I need to calculate the bytes size and write it */
 			BitSet bitSet = getBitSet(zeroOnesString);
 			byte[] writeBytes = bitSet.toByteArray();
-			out.write(writeBytes.length + "\n");
+			out.write(writeBytes.length + "\n"); //	OK
+			
+			/** Let's write the table now */
 			lengthOfNodes = copy.size();
 			for (int i = 0; i < lengthOfNodes; i++) {
 				Node q = copy.poll();
-				out.write(q.getCharacter() + "_:_" + q.getCode() + "\n");
+				out.write(q.getCharacter() + "_:_" + q.getCode() + "\n"); //OK
 			}
-			out.write("<<====>>\n");
-			out.close();
 
-			fos = new FileOutputStream(this.outputFile, true); // --> Appending in the file
-			fos.write(writeBytes);
-			fos.close();
+			out.write("<<====>>\n"); //End of the header
+			out.close();
+			
+			/** Let the 0s and 1s begin */
 			BinaryOut binOut = new BinaryOut("compressed.txt");
 			for (int i = 0; i < zeroOnesString.length(); i++) {
 				if (zeroOnesString.charAt(i) == '0')
-					binOut.write(false);
+					binOut.write(false); //Write 0 to the file
 				else
-					binOut.write(true);
+					binOut.write(true); //Write 1 to the file
 			}
 			binOut.close();
+			
 		} catch (Exception e) {
 			System.err.println("Error while writing to file: " + e.getMessage());
 		}
