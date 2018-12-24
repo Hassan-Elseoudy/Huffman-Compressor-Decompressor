@@ -1,7 +1,5 @@
 package pkjaya;
 
-import java.io.IOException;
-
 public class HuffmanAnalyzer {
 
 	private String fileName;

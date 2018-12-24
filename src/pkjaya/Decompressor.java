@@ -3,7 +3,6 @@ package pkjaya;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -28,20 +27,20 @@ public class Decompressor {
 		byte[] allFile = Files.readAllBytes(Paths.get(this.fileName));
 		int fileSize = allFile.length; // Get Whole size
 		String zerosAndOnes = getEncodedString(allFile, fileSize, bytesLength);
-		String LetsGetItBack = getActualString(zerosAndOnes,dictionary);
+		String LetsGetItBack = getActualString(zerosAndOnes, dictionary);
 		System.out.println(LetsGetItBack);
 		BufferedWriter writer = new BufferedWriter(new FileWriter(this.outputFile));
-	    writer.write(LetsGetItBack+"\n");
-	    writer.close();
+		writer.write(LetsGetItBack + "\n");
+		writer.close();
 
 	}
-	
-	String getActualString(String zerosAndOnes, HashMap<String,String> dictionary) {
+
+	String getActualString(String zerosAndOnes, HashMap<String, String> dictionary) {
 		String s = "";
 		String decoded = "";
-		for(int i = 0; i < zerosAndOnes.length(); i++) {
-			s+= zerosAndOnes.charAt(i);
-			if(dictionary.containsKey(s)) {
+		for (int i = 0; i < zerosAndOnes.length(); i++) {
+			s += zerosAndOnes.charAt(i);
+			if (dictionary.containsKey(s)) {
 				decoded += dictionary.get(s);
 				s = "";
 			}
@@ -69,7 +68,14 @@ public class Decompressor {
 			temp = buff.readLine(); // I Don't want the first line
 			while (!(temp = buff.readLine()).contains("<<====>>")) {
 				String[] arr = temp.split("_:_");
-				hm.put(arr[1], arr[0]);
+				if (arr.length == 2) {
+					if (arr[0].length() == 0) {
+						hm.put(arr[1], System.getProperty("line.separator"));
+						continue;
+					}
+					hm.put(arr[1], arr[0]);
+				} else
+					continue;
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
