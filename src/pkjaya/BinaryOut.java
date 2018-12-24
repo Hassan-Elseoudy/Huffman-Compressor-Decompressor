@@ -17,7 +17,6 @@ package pkjaya;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * <i>Binary output</i>. This class provides methods for converting primtive
@@ -48,8 +47,7 @@ public final class BinaryOut {
 	 */
 	public BinaryOut(String filename) {
 		try {
-			OutputStream os = new FileOutputStream(filename,true);
-			out = new BufferedOutputStream(os);
+			out = new BufferedOutputStream(new FileOutputStream(filename,true));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

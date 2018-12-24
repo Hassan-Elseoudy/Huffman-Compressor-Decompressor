@@ -89,6 +89,12 @@ public class Decompressor {
 		String s = "";
 		/**
 		 * Dealing with file bytes.
+		 * 5
+		 * a = 
+		 * b = 
+		 * c = 
+		 * <====>
+		 * bytesLength
 		 */
 		for (int i = (fileSize - bytesLength); i < fileSize - 1; i++) {
 			int temp = (byte) allFile[i] & 0xFF;

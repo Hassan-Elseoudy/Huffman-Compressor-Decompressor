@@ -11,15 +11,32 @@ public class Compressor {
 	private File outputFile = new File("compressed.txt");
 	private String secret = "HuffmanYaRgola";
 	private HashMap<String, String> updatedCodes = new HashMap<String, String>();
-	private FileOutputStream fos;
+	private int fileOrFolder;
+	private BufferedWriter out;
 
-	public Compressor(String fileName) throws IOException {
+	public Compressor(String fileName, int fileOrFolder) throws IOException {
 		this.fileName = fileName;
-		compress();
+		this.fileOrFolder = fileOrFolder;
+		if (fileOrFolder == 0)
+			compress(this.fileName);
+		else {
+			String args[] = readAllFiles(this.fileName);
+			for (int i = 0; i < args.length; i++) {
+				this.fileName = fileName;
+				this.fileName += "//" + args[i];
+				compress(this.fileName);
+			}
+		}
 	}
 
-	private void compress() throws IOException {
-		this.dictionary = makeDictionary();
+	private String[] readAllFiles(String str) {
+		File aDirectory = new File(str);
+		String[] args = aDirectory.list();
+		return args;
+	}
+
+	private void compress(String str) throws IOException {
+		this.dictionary = makeDictionary(str);
 		PriorityQueue<Node> pq = new PriorityQueue<Node>(dictionary.size(), new Comparator<Node>() {
 			@Override
 			public int compare(Node o1, Node o2) {
@@ -47,7 +64,7 @@ public class Compressor {
 		this.root = pq.remove();
 		giveCodes(root, "0");
 		writeIntoAFile(listOfNodes, this.outputFile);
-
+		dictionary.clear();
 	}
 
 	private void writeIntoAFile(PriorityQueue<Node> pq, File outputFile) {
@@ -58,10 +75,7 @@ public class Compressor {
 			String text = scanner.useDelimiter("\\A").next();
 			scanner.close();
 			String zeroOnesString = "";
-
-			FileWriter fstream = new FileWriter(outputFile);
-			BufferedWriter out = new BufferedWriter(fstream);
-
+			out = new BufferedWriter(new FileWriter(outputFile, true));
 			int lengthOfNodes = pq.size();
 			for (int i = 0; i < lengthOfNodes; i++) {
 				Node q = pq.poll();
@@ -77,18 +91,17 @@ public class Compressor {
 			/** I need to calculate the bytes size and write it */
 			BitSet bitSet = getBitSet(zeroOnesString);
 			byte[] writeBytes = bitSet.toByteArray();
-			out.write(writeBytes.length + "\n"); // OK
+			out.write(writeBytes.length + System.getProperty("line.separator")); // OK
 
 			/** Let's write the table now */
 			lengthOfNodes = copy.size();
 			for (int i = 0; i < lengthOfNodes; i++) {
 				Node q = copy.poll();
-				out.write(q.getCharacter() + "_:_" + q.getCode() + "\n"); // OK
+				out.write(q.getCharacter() + "_:_" + q.getCode() + System.getProperty("line.separator")); // OK
 			}
 
-			out.write("<<====>>\n"); // End of the header
+			out.write("<<====>>" + System.getProperty("line.separator")); // End of the header
 			out.close();
-
 			/** Let the 0s and 1s begin */
 			BinaryOut binOut = new BinaryOut("compressed.txt");
 			for (int i = 0; i < zeroOnesString.length(); i++) {
@@ -98,7 +111,11 @@ public class Compressor {
 					binOut.write(true); // Write 1 to the file
 			}
 			binOut.close();
-
+			out = new BufferedWriter(new FileWriter(outputFile, true));
+			out.write(System.getProperty("line.separator") + "END" + System.getProperty("line.separator"));
+			out.close();
+			updatedCodes.clear();
+			zeroOnesString = "";
 		} catch (Exception e) {
 			System.err.println("Error while writing to file: " + e.getMessage());
 		}
@@ -116,11 +133,11 @@ public class Compressor {
 		return bitSet;
 	}
 
-	private HashMap<String, Integer> makeDictionary() {
+	private HashMap<String, Integer> makeDictionary(String str) {
 		HashMap<String, Integer> dict = new HashMap<String, Integer>();
 		try {
 
-			FileInputStream file = new FileInputStream(this.fileName);
+			FileInputStream file = new FileInputStream(str);
 			String read;
 			while (file.available() > 1) {
 				Character temp = (char) file.read();
